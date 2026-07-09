@@ -1,0 +1,368 @@
+{
+  "name": "Personal-Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "d5143ab3-2dce-48be-962a-d2efc9f158c8",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "646cab94-73bd-4879-922e-4cc205261f9d",
+      "name": "Telegram Trigger",
+      "webhookId": "d3cc1579-42d0-4fdc-bf50-a8e0b26a0534",
+      "credentials": {
+        "telegramApi": {
+          "id": "fgXlzPgtEGx1BcUu",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{$('Telegram Trigger').item.json.message.chat.id}}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        80,
+        240
+      ],
+      "id": "908d9c7d-eeb8-4b00-9c13-f718a23fd953",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        720,
+        -32
+      ],
+      "id": "a132e5d3-b4ee-48ed-aa8a-9ed7c285f95e",
+      "name": "Send a text message1",
+      "webhookId": "4c8288d5-18c6-4ffc-99aa-28f280ed3ca8",
+      "credentials": {
+        "telegramApi": {
+          "id": "fgXlzPgtEGx1BcUu",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "This tool provides the contact details.",
+        "documentId": {
+          "__rl": true,
+          "value": "1AmZEfe4ZIP9Pbr3X4XT_pwa7Te1ePL7V1ab4UTqU3_w",
+          "mode": "list",
+          "cachedResultName": "Contacts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AmZEfe4ZIP9Pbr3X4XT_pwa7Te1ePL7V1ab4UTqU3_w/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AmZEfe4ZIP9Pbr3X4XT_pwa7Te1ePL7V1ab4UTqU3_w/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Name",
+              "lookupValue": "={{ $fromAI('contact_name', `The name of the contact mentioned by the user. Example: if the user says \"send an email to Rakesh\", return \"Rakesh\".`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        240,
+        240
+      ],
+      "id": "0a177243-8122-4d17-8eb0-9588d1787e89",
+      "name": "Contact_Database",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "f8ILRi2Z3B5RWjGH",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        240
+      ],
+      "id": "e0212d13-5f0e-40ac-9d0a-86c467ad19bb",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "OiDrv1YoYbdGXjmB",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Use this tool for all Gmail-related tasks such as:\n- Reading emails\n- Summarizing emails\n- Sending emails\n- Searching emails",
+        "workflowId": {
+          "__rl": true,
+          "value": "ibDUSWcyoiXpugSw",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/ibDUSWcyoiXpugSw",
+          "cachedResultName": "Email Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_request": "={{ $('Telegram Trigger').item.json.message.text }}"
+          },
+          "matchingColumns": [
+            "user_request"
+          ],
+          "schema": [
+            {
+              "id": "user_request",
+              "displayName": "user_request",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        400,
+        240
+      ],
+      "id": "f37a8ea5-dc67-4037-9b88-b58ce99dfdd6",
+      "name": "Call 'Email Agent'"
+    },
+    {
+      "parameters": {
+        "description": "Call this tool handles the google Calender ",
+        "workflowId": {
+          "__rl": true,
+          "value": "FYA3bJtUhzF9UWI5",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/FYA3bJtUhzF9UWI5",
+          "cachedResultName": "Google Calender Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_prompt": "={{ $json.message.text }}"
+          },
+          "matchingColumns": [
+            "user_prompt"
+          ],
+          "schema": [
+            {
+              "id": "user_prompt",
+              "displayName": "user_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        256
+      ],
+      "id": "ca8fe96d-7c49-4427-aaea-3588df6a9530",
+      "name": "Google Calender"
+    },
+    {
+      "parameters": {
+        "description": "Call this tool to gather any information from web\n",
+        "workflowId": {
+          "__rl": true,
+          "value": "l7enHsjnru5PCvhO",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/l7enHsjnru5PCvhO",
+          "cachedResultName": "Research agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        752,
+        272
+      ],
+      "id": "04dd9a5c-bd19-401f-acd5-75f5de5cf744",
+      "name": "Research agent"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contact_Database": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Email Agent'": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calender": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message1": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "345b928f-9486-4961-b7a6-b146cfa4ac70",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0a8c72febb5a76ce69a8a85dc8e116f63928e1c874c2d49ec8d9fc4e39698ef6"
+  },
+  "nodeGroups": [],
+  "id": "3HWAr37W2Mh9Nta6",
+  "tags": []
+}
