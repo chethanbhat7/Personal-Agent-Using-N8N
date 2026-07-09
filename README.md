@@ -123,9 +123,7 @@ The workflow triggers sub-agents as tool definitions:
 
 ---
 
-## 🤝 Contributing
 
-Contributions are welcome! If you build out better sub-agents or add additional tools (like Slack, Notion, or Todoist integration), feel free to open a Pull Request.
 
 ## 📄 License
 
